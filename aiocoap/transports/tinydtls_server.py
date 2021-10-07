@@ -107,7 +107,8 @@ class _AddressDTLS(interfaces.EndpointAddress):
 
     def _write(self, recipient, data):
         if _SEND_SLEEP_WORKAROUND and \
-                len(data) > 13 and data[0] == 22 and data[13] == 14:
+                ((len(data) > 13 and data[0] == 22 and data[13] == 14) or
+                  len(data) > 4 and data[0] == 22 and data[4] > 0):
             import time
             time.sleep(_SEND_SLEEP_WORKAROUND)
         self._underlying_address.send(data)
