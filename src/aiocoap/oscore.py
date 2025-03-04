@@ -1839,18 +1839,18 @@ class FilesystemSecurityContext(
     ):
         self.basedir = basedir
 
-        self.lockfile: Optional[filelock.FileLock] = filelock.FileLock(
-            os.path.join(basedir, "lock")
-        )
-        # 0.001: Just fail if it can't be acquired
-        # See https://github.com/benediktschmitt/py-filelock/issues/57
-        try:
-            self.lockfile.acquire(timeout=0.001)
-        # see https://github.com/PyCQA/pycodestyle/issues/703
-        except:  # noqa: E722
-            # No lock, no loading, no need to fail in __del__
-            self.lockfile = None
-            raise
+        # self.lockfile: Optional[filelock.FileLock] = filelock.FileLock(
+        #     os.path.join(basedir, "lock")
+        # )
+        # # 0.001: Just fail if it can't be acquired
+        # # See https://github.com/benediktschmitt/py-filelock/issues/57
+        # try:
+        #     self.lockfile.acquire(timeout=0.001)
+        # # see https://github.com/PyCQA/pycodestyle/issues/703
+        # except:  # noqa: E722
+        #     # No lock, no loading, no need to fail in __del__
+        #     self.lockfile = None
+        #     raise
 
         # Always enabled as committing to a file for every received request
         # would be a terrible burden.
@@ -2024,14 +2024,14 @@ class FilesystemSecurityContext(
         del self.sender_key
         del self.recipient_key
 
-        os.unlink(self.lockfile.lock_file)
-        self.lockfile.release()
+        # os.unlink(self.lockfile.lock_file)
+        # self.lockfile.release()
 
-        self.lockfile = None
+        # self.lockfile = None
 
-    def __del__(self):
-        if self.lockfile is not None:
-            self._destroy()
+    # def __del__(self):
+    #     if self.lockfile is not None:
+    #         self._destroy()
 
     @classmethod
     def from_item(cls, init_data):
