@@ -1130,26 +1130,33 @@ class CanProtect(BaseSecurityContext, metaclass=abc.ABCMeta):
         This leaves the messages' remotes unset."""
 
         if message.code.is_request():
-            outer_host = message.opt.uri_host
-            proxy_uri = message.opt.proxy_uri
+            if not hasattr(message, "is_inner") or message.is_inner:
+                outer_host = message.opt.uri_host
+                proxy_uri = message.opt.proxy_uri
 
-            inner_message = message.copy(
-                uri_host=None,
-                uri_port=None,
-                proxy_uri=None,
-                proxy_scheme=None,
-            )
-            inner_message.remote = None
-
-            if proxy_uri is not None:
-                # Use set_request_uri to split up the proxy URI into its
-                # components; extract, preserve and clear them.
-                inner_message.set_request_uri(proxy_uri, set_uri_host=False)
-                if inner_message.opt.proxy_uri is not None:
-                    raise ValueError("Can not split Proxy-URI into options")
-                outer_uri = inner_message.remote.uri_base
+                inner_message = message.copy(
+                    uri_host=None,
+                    uri_port=None,
+                    proxy_uri=None,
+                    proxy_scheme=None,
+                )
                 inner_message.remote = None
-                inner_message.opt.proxy_scheme = None
+
+                if proxy_uri is not None:
+                    # Use set_request_uri to split up the proxy URI into its
+                    # components; extract, preserve and clear them.
+                    inner_message.set_request_uri(proxy_uri, set_uri_host=False)
+                    if inner_message.opt.proxy_uri is not None:
+                        raise ValueError("Can not split Proxy-URI into options")
+                    outer_uri = inner_message.remote.uri_base
+                    inner_message.remote = None
+                    inner_message.opt.proxy_scheme = None
+            else:
+                outer_host = None
+                proxy_uri = None
+                inner_message = message.copy()
+                # do not leak proxy scheme to outer
+                message.opt.proxy_scheme = None
 
             if message.opt.observe is None:
                 outer_code = POST

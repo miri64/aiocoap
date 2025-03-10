@@ -818,6 +818,7 @@ class BlockwiseRequest(BaseUnicastRequest, interfaces.Request):
         # is responsible for updating this number.
         block_cursor = 0
 
+        app_remote = app_request.remote
         while True:
             # ... send a chunk
 
@@ -836,6 +837,7 @@ class BlockwiseRequest(BaseUnicastRequest, interfaces.Request):
                 )
                 if block_cursor == 0:
                     current_block1.opt.size1 = len(app_request.payload)
+                current_block1.remote = app_remote
             else:
                 current_block1 = app_request
 
@@ -933,6 +935,7 @@ class BlockwiseRequest(BaseUnicastRequest, interfaces.Request):
         # block1 as a reference for now, especially because in the
         # only-one-request-block case, that's the original request we must send
         # again and again anyway
+        current_block1.remote = app_remote
         assembled_response = await cls._complete_by_requesting_block2(
             protocol, current_block1, blockresponse, log
         )
@@ -1015,12 +1018,13 @@ class BlockwiseRequest(BaseUnicastRequest, interfaces.Request):
 
         assembled_response = initial_response
         last_response = initial_response
+        remote = request_to_repeat.remote
         while True:
             current_block2 = request_to_repeat._generate_next_block2_request(
                 assembled_response
             )
 
-            current_block2 = current_block2.copy(remote=initial_response.remote)
+            current_block2 = current_block2.copy(remote=remote)
 
             blockrequest = protocol.request(current_block2, handle_blockwise=False)
             last_response = await blockrequest.response

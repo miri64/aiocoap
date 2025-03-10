@@ -52,10 +52,15 @@ def _requires_ua(f):
 
 
 class OSCOREAddress(
-    namedtuple("_OSCOREAddress", ["security_context", "underlying_address"]),
     interfaces.EndpointAddress,
 ):
     """Remote address type for :class:`TransportOSCORE`."""
+
+    def __init__(self, security_context, underlying_address):
+        self.security_context = security_context
+        self.underlying_address = underlying_address
+        self._maximum_block_size_exp = underlying_address.maximum_block_size_exp
+        self.underlying_address.maximum_block_size_exp = MAX_REGULAR_BLOCK_SIZE_EXP
 
     def __repr__(self):
         return "<%s in context %r to %r>" % (
@@ -97,7 +102,6 @@ class OSCOREAddress(
     is_multicast_locally = False
 
     maximum_payload_size = 1024
-    maximum_block_size_exp = MAX_REGULAR_BLOCK_SIZE_EXP
 
     @property
     def blockwise_key(self):
@@ -112,6 +116,14 @@ class OSCOREAddress(
         else:
             detail = self.security_context.recipient_key
         return (self.underlying_address.blockwise_key, detail)
+
+    @property
+    def maximum_block_size_exp(self):
+        return self._maximum_block_size_exp
+
+    @maximum_block_size_exp.setter
+    def maximum_block_size_exp(self, value):
+        self._maximum_block_size_exp = value
 
 
 class TransportOSCORE(interfaces.RequestProvider):
@@ -140,7 +152,7 @@ class TransportOSCORE(interfaces.RequestProvider):
     async def fill_or_recognize_remote(self, message):
         if isinstance(message.remote, OSCOREAddress):
             return True
-        if message.opt.oscore is not None:
+        if (not hasattr(message, "is_inner") or message.is_inner) and message.opt.oscore is not None:
             # double oscore is not specified; using this fact to make `._wire
             # is ._context` an option
             return False
