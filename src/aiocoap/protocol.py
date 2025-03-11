@@ -838,6 +838,8 @@ class BlockwiseRequest(BaseUnicastRequest, interfaces.Request):
                 if block_cursor == 0:
                     current_block1.opt.size1 = len(app_request.payload)
                 current_block1.remote = app_remote
+                if hasattr(app_request, "is_inner"):
+                    current_block1.is_inner = app_request.is_inner
             else:
                 current_block1 = app_request
 
