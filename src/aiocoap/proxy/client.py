@@ -43,5 +43,4 @@ class ProxyForwarder(interfaces.RequestProvider):
         message.opt.uri_host = host
         message.opt.proxy_scheme = self.proxy_address.scheme
         message.remote = self.proxy_address
-
-        return self.context.request(message)
+        return self.context.request(message, **kwargs)

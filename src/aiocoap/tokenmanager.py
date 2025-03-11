@@ -217,7 +217,7 @@ class TokenManager(interfaces.RequestInterface, interfaces.TokenManager):
     async def fill_or_recognize_remote(self, message):
         return await self.token_interface.fill_or_recognize_remote(message)
 
-    def request(self, request):
+    def request(self, request, **kwargs):
         if self.outgoing_requests is None:
             request.add_exception(error.LibraryShutdown())
             return

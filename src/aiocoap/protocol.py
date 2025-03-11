@@ -468,6 +468,7 @@ class Context(interfaces.RequestProvider):
         raise RuntimeError("No request interface could route message")
 
     def request(self, request_message, handle_blockwise=True):
+        assert not handle_blockwise
         if handle_blockwise:
             return BlockwiseRequest(self, request_message)
 
@@ -480,7 +481,7 @@ class Context(interfaces.RequestProvider):
                 request_interface = await self.find_remote_and_interface(
                     request_message
                 )
-                request_interface.request(pipe)
+                request_interface.request(pipe, handle_blockwise=handle_blockwise)
             except Exception as e:
                 pipe.add_exception(e)
                 return
@@ -838,7 +839,8 @@ class BlockwiseRequest(BaseUnicastRequest, interfaces.Request):
                 if block_cursor == 0:
                     current_block1.opt.size1 = len(app_request.payload)
                 current_block1.remote = app_remote
-                current_block1.is_inner = app_request.is_inner
+                if hasattr(app_request, "is_inner"):
+                    current_block1.is_inner = app_request.is_inner
             else:
                 current_block1 = app_request
 

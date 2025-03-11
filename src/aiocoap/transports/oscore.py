@@ -179,9 +179,9 @@ class TransportOSCORE(interfaces.RequestProvider):
         else:
             return False
 
-    def request(self, request):
+    def request(self, request, **kwargs):
         t = self.loop.create_task(
-            self._request(request),
+            self._request(request, **kwargs),
             name="OSCORE request %r" % request,
         )
         self._tasks.add(t)
@@ -195,7 +195,7 @@ class TransportOSCORE(interfaces.RequestProvider):
 
         t.add_done_callback(done)
 
-    async def _request(self, request) -> None:
+    async def _request(self, request, **kwargs) -> None:
         """Process a request including any pre-flights or retries
 
         Retries by this coroutine are limited to actionable authenticated
@@ -238,7 +238,7 @@ class TransportOSCORE(interfaces.RequestProvider):
             protected, original_request_seqno = secctx.protect(msg_to_protect)
             protected.remote = msg.remote.underlying_address
 
-            wire_request = self._wire.request(protected)
+            wire_request = self._wire.request(protected, **kwargs)
 
             return (wire_request, original_request_seqno)
 
