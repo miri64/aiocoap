@@ -34,15 +34,20 @@ class OscoreSiteWrapper(interfaces.Resource):
         self._inner_site = inner_site
         self.server_credentials = server_credentials
 
+        from .blockwise import Block1Spool
+
+        self._block1 = Block1Spool()
+
     async def render(self, request):
         raise RuntimeError(
             "OscoreSiteWrapper can only be used through the render_to_pipe interface"
         )
 
     async def needs_blockwise_assembly(self, request):
-        raise RuntimeError(
-            "OscoreSiteWrapper can only be used through the render_to_pipe interface"
-        )
+        return True
+        # raise RuntimeError(
+        #     "OscoreSiteWrapper can only be used through the render_to_pipe interface"
+        # )
 
     # FIXME: should there be a get_resources_as_linkheader that just forwards
     # all the others and indicates ;osc everywhere?
@@ -74,6 +79,9 @@ class OscoreSiteWrapper(interfaces.Resource):
                 raise error.Unauthorized("Security context not found")
             else:
                 return
+
+        if await self.needs_blockwise_assembly(request):
+            request = self._block1.feed_and_take(request)
 
         try:
             unprotected, seqno = sc.unprotect(request)
