@@ -361,7 +361,12 @@ class Message(object):
         blockopt = (number, more, size_exp)
 
         if self.code.is_request():
-            return self.copy(payload=payload, mid=None, block1=blockopt)
+            return self.copy(
+                payload=payload,
+                mid=None,
+                block1=blockopt,
+                block2=self.opt.block2 if not more else None
+            )
         else:
             return self.copy(payload=payload, mid=None, block2=blockopt)
 
