@@ -351,10 +351,18 @@ class MessageInterfaceUDP6(RecvmsgDatagramProtocol, interfaces.MessageInterface)
 
     @classmethod
     async def create_client_transport_endpoint(
-        cls, ctx: interfaces.MessageManager, log, loop
+        cls, ctx: interfaces.MessageManager, log, loop, bind=None
     ):
         sock = socket.socket(family=socket.AF_INET6, type=socket.SOCK_DGRAM)
         sock.setsockopt(socket.IPPROTO_IPV6, socket.IPV6_V6ONLY, 0)
+        if bind is not None:
+            bind = bind or ("::", None)
+            # Interpret None as 'default port', but still allow to bind to 0 for
+            # clients that want a random port (eg. when the service URLs are
+            # advertised out-of-band anyway, or in LwM2M clients)
+            bind = (bind[0], COAP_PORT if bind[1] is None else bind[1])
+            sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
+            sock.bind(bind)
 
         return await cls._create_transport_endpoint(sock, ctx, log, loop)
 

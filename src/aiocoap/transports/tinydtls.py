@@ -187,6 +187,8 @@ class DTLSClientConnection(interfaces.EndpointAddress):
             self._transport, _ = await self.coaptransport.loop.create_datagram_endpoint(
                 self.SingleConnection.factory(self),
                 remote_addr=(self._host, self._port),
+                local_addr=self.coaptransport.bind,
+                reuse_port=self.coaptransport.bind is not None,
             )
 
             self._dtls_socket = dtls.DTLS(
@@ -341,7 +343,7 @@ class DTLSClientConnection(interfaces.EndpointAddress):
 
 
 class MessageInterfaceTinyDTLS(interfaces.MessageInterface):
-    def __init__(self, ctx: interfaces.MessageManager, log, loop):
+    def __init__(self, ctx: interfaces.MessageManager, log, loop, bind=None):
         self._pool: weakref.WeakValueDictionary = weakref.WeakValueDictionary(
             {}
         )  # see _connection_for_address
@@ -350,6 +352,7 @@ class MessageInterfaceTinyDTLS(interfaces.MessageInterface):
 
         self.log = log
         self.loop = loop
+        self.bind = bind
 
         self._shutting_down = False
 
@@ -374,9 +377,15 @@ class MessageInterfaceTinyDTLS(interfaces.MessageInterface):
 
     @classmethod
     async def create_client_transport_endpoint(
-        cls, ctx: interfaces.MessageManager, log, loop
+        cls, ctx: interfaces.MessageManager, log, loop, bind=None
     ):
-        return cls(ctx, log, loop)
+        if bind is not None:
+            bind = bind or ("::", None)
+            # Interpret None as 'default port', but still allow to bind to 0 for
+            # clients that want a random port (eg. when the service URLs are
+            # advertised out-of-band anyway, or in LwM2M clients)
+            bind = (bind[0], COAPS_PORT if bind[1] is None else bind[1])
+        return cls(ctx, log, loop, bind=bind)
 
     async def recognize_remote(self, remote):
         return (

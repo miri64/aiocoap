@@ -50,7 +50,7 @@ user has write access to the aiocoap source code.
 import asyncio
 import weakref
 import time
-from typing import Optional, List
+from typing import Optional, List, Tuple
 
 from . import defaults
 from .credentials import CredentialsMap
@@ -162,7 +162,8 @@ class Context(interfaces.RequestProvider):
 
     @classmethod
     async def create_client_context(
-        cls, *, loggername="coap", loop=None, transports: Optional[List[str]] = None
+        cls, *, loggername="coap", loop=None, transports: Optional[List[str]] = None,
+        local_bind: Optional[Tuple[str, int]] = None,
     ):
         """Create a context bound to all addresses on a random listening port.
 
@@ -190,7 +191,7 @@ class Context(interfaces.RequestProvider):
 
                 await self._append_tokenmanaged_messagemanaged_transport(
                     lambda mman: MessageInterfaceUDP6.create_client_transport_endpoint(
-                        mman, log=self.log, loop=loop
+                        mman, log=self.log, loop=loop, bind=local_bind,
                     )
                 )
             elif transportname == "simple6":
@@ -206,7 +207,7 @@ class Context(interfaces.RequestProvider):
 
                 await self._append_tokenmanaged_messagemanaged_transport(
                     lambda mman: MessageInterfaceTinyDTLS.create_client_transport_endpoint(
-                        mman, log=self.log, loop=loop
+                        mman, log=self.log, loop=loop, bind=local_bind
                     )
                 )
             elif transportname == "tcpclient":
