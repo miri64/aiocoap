@@ -13,7 +13,10 @@ from typing import Optional, Dict, Literal
 import os
 
 import cbor2
-import lakers
+try:
+    import lakers
+except ImportError:
+    lakers = None
 
 from . import oscore, credentials, error
 from . import Message

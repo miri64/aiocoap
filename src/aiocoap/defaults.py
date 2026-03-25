@@ -185,10 +185,10 @@ def oscore_missing_modules():
     except ImportError:
         missing.append("ge25519")
 
-    try:
-        import lakers  # noqa: F401
-    except ImportError:
-        missing.append("lakers-python")
+    # try:
+    #     import lakers  # noqa: F401
+    # except ImportError:
+    #     missing.append("lakers-python")
 
     return missing
 

@@ -14,7 +14,10 @@ import uuid
 import io
 
 import cbor2
-import lakers
+try:
+    import lakers
+except ImportError:
+    lakers = None
 
 import aiocoap
 from aiocoap import interfaces
