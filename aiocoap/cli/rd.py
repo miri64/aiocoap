@@ -419,7 +419,7 @@ def link_format_from_message(message):
         if certain_format == ContentFormat.LINKFORMAT:
             return parse(message.payload.decode("utf8"))
         else:
-            raise error.UnsupportedMediaType()
+            raise error.UnsupportedContentFormat()
     except (UnicodeDecodeError, link_header.ParseException):
         raise error.BadRequest()
 
