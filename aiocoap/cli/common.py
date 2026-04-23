@@ -15,12 +15,15 @@ Typical use is like this::
 >>> p.add_argument('--foo')                         # doctest: +ELLIPSIS
 _...
 >>> add_server_arguments(p)
->>> opts = p.parse_args(['--bind', '[::1]:56830', '--foo=bar'])
+>>> add_verbosity_arguments(p)
+>>> opts = p.parse_args(['--bind', '[::1]:56830', '--foo=bar', '-vv'])
 
 You can then either pass opts directly to
-:func:`server_context_from_arguments`, or split up the arguments::
+:func:`server_context_from_arguments`, or split up the arguments
+(the logging arguments don't have a dedicated splitting function)::
 
 >>> server_opts = extract_server_arguments(opts)
+>>> set_up_logging(opts)
 >>> opts
 Namespace(foo='bar')
 
@@ -30,6 +33,7 @@ Then, server_opts can be passed to `server_context_from_arguments`.
 import sys
 import argparse
 from pathlib import Path
+import logging
 
 from ..config import Config
 from ..util import hostportsplit
@@ -199,3 +203,88 @@ async def server_context_from_arguments(site, namespace, **kwargs):
         transports=config.transport,
         **kwargs,
     )
+
+
+def add_verbosity_arguments(parser):
+    """Add the --verbose and --quiet options to an argparse parser"""
+
+    parser.add_argument(
+        "-v",
+        "--verbose",
+        help="Increase the debug output (repeat for increased verbosity)",
+        action="count",
+        default=0,
+    )
+    parser.add_argument(
+        "-q",
+        "--quiet",
+        help="Decrease the debug output",
+        action="count",
+        default=0,
+    )
+
+
+def _verbosity_to_level(verbosity):
+    if verbosity < -2:
+        return logging.CRITICAL + 1
+    elif verbosity == -2:
+        return logging.CRITICAL
+    elif verbosity == -1:
+        return logging.ERROR
+    elif verbosity == 0:
+        return logging.WARNING
+    elif verbosity == 1:
+        return logging.INFO
+    elif verbosity == 2:
+        return logging.DEBUG
+    elif verbosity >= 3:
+        # avoiding 0 because that is NOTSET and means "inherit"
+        return 1
+
+
+def set_up_logging(
+    namespace, hero_loggers: list[logging.Logger] | None = None, color=None
+):
+    """Applies the ``--verbose`` / ``--quiet`` arguments from a namespace and
+    removes them.
+
+    If any hero loggers are given, then those loggers' verbosity is increased
+    at the first ``-v``, whereas aiocoap loggers ignore the first ``-v``.
+    Loggers outside aiocoap see even fewer ``-v``.
+
+    Color logging is set up when available unless ``color=False`` is given.
+    """
+
+    if color is not False:
+        try:
+            import colorlog
+        except ImportError:
+            color = False
+        else:
+            colorlog.basicConfig()
+    if not color:
+        logging.basicConfig()
+
+    given_verbosity = namespace.verbose - namespace.quiet
+    clamp1 = max(namespace.verbose - 1, 0) - namespace.quiet
+    clamp2 = max(namespace.verbose - 2, 0) - namespace.quiet
+    if hero_loggers:
+        hero_verbosity = _verbosity_to_level(given_verbosity)
+        regular_verbosity = _verbosity_to_level(clamp1)
+        root_verbosity = _verbosity_to_level(clamp2)
+    else:
+        regular_verbosity = _verbosity_to_level(given_verbosity)
+        root_verbosity = _verbosity_to_level(clamp1)
+
+    logging.root.setLevel(root_verbosity)
+
+    # different names are in use depending on how the context is constructed
+    for logname in ("coap", "coap-server", "coap-client", "coap-rd-registerer"):
+        logging.getLogger(logname).setLevel(regular_verbosity)
+
+    if hero_loggers:
+        for logger in hero_loggers:
+            logger.setLevel(hero_verbosity)
+
+    del namespace.verbose
+    del namespace.quiet

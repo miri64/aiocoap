@@ -17,7 +17,12 @@ from aiocoap.proxy.server import (
     UnconditionalRedirector,
 )
 from aiocoap.util.cli import AsyncCLIDaemon
-from aiocoap.cli.common import add_server_arguments, server_context_from_arguments
+from aiocoap.cli.common import (
+    add_server_arguments,
+    server_context_from_arguments,
+    add_verbosity_arguments,
+    set_up_logging,
+)
 
 
 def build_parser():
@@ -33,6 +38,8 @@ def build_parser():
         "details", "Options that govern how requests go in and out"
     )
     add_server_arguments(details)
+    add_verbosity_arguments(p)
+
     details.add_argument(
         "--register",
         help="Register with a Resource directory",
@@ -112,6 +119,7 @@ class Main(AsyncCLIDaemon):
     async def start(self, args=None):
         parser = build_parser()
         options = parser.parse_args(args if args is not None else sys.argv[1:])
+        set_up_logging(options)
         self.options = options
 
         if not options.forward and not options.reverse:
