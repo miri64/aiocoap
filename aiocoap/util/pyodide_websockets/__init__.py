@@ -27,6 +27,10 @@ async def connect(
     uri, subprotocols=None, ping_interval=20, ssl=None
 ) -> asyncio.connection.Connection:
     from pyodide.ffi.wrappers import add_event_listener
+
+    # FIXME: If this fails, we're not running in a browser but in node or
+    # similar. Can and should we detect this in defaults and not use the shim
+    # in this case?
     from js import WebSocket
 
     if ssl is not None:
