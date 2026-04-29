@@ -68,8 +68,7 @@ steps:
   # pypy tests are split b/c they are relatively slow on their own.
 
   test:pypy-allextras:
-    # Workaround-For: https://github.com/pypy/pypy/issues/5388
-    image: docker.io/pypy:3-7.3.20
+    image: docker.io/pypy:3
     depends_on: [env, test:3.13-minimal]
     environment:
       TOXENV: "pypy3-allextras"
@@ -80,8 +79,7 @@ steps:
       - tox
 
   test:pypy-noextras:
-    # Workaround-For: https://github.com/pypy/pypy/issues/5388
-    image: docker.io/pypy:3-7.3.20
+    image: docker.io/pypy:3
     depends_on: [env, test:3.13-minimal]
     environment:
       TOXENV: "pypy3-noextras"
@@ -92,8 +90,7 @@ steps:
       - tox
 
   test:pypy-simpleudp:
-    # Workaround-For: https://github.com/pypy/pypy/issues/5388
-    image: docker.io/pypy:3-7.3.20
+    image: docker.io/pypy:3
     depends_on: [env, test:3.13-minimal]
     environment:
       TOXENV: "pypy3-simpleudp"

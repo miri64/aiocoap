@@ -9,6 +9,7 @@ or the installation documentation).
 
 Run it as `python3 -m aiocoap.cli.defaults`."""
 
+import socket
 import sys
 from aiocoap.meta import version
 from aiocoap.defaults import (
@@ -19,6 +20,21 @@ from aiocoap.defaults import (
 )
 import argparse
 import os
+
+
+def describe_ai_addrconfig_v6():
+    try:
+        addrs = socket.getaddrinfo(
+            "::1",
+            1234,
+            family=socket.AF_UNSPEC,
+            type=socket.SOCK_DGRAM,
+            proto=socket.IPPROTO_UDP,
+            flags=socket.AI_ADDRCONFIG,
+        )
+        return f"returned {len(addrs)} result(s)"
+    except socket.gaierror:
+        return "raises gaierror"
 
 
 def main(argv=None):
@@ -64,6 +80,10 @@ def main(argv=None):
     print(
         "SO_REUSEPORT available (default, selected): %s, %s"
         % (has_reuse_port(use_env=False), has_reuse_port())
+    )
+    print(
+        "Behavior of real getaddrinfo('::1', …, AI_ADDRCONFIG) is:",
+        describe_ai_addrconfig_v6(),
     )
 
     if error:
