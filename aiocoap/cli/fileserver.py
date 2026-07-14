@@ -50,6 +50,8 @@ from aiocoap.cli.common import (
     add_server_arguments,
     server_context_from_arguments,
     extract_server_arguments,
+    add_verbosity_arguments,
+    set_up_logging,
 )
 from aiocoap.resourcedirectory.client.register import Registerer
 
@@ -339,19 +341,13 @@ class FileServer(Resource, aiocoap.interfaces.ObservableResource):
 
 class FileServerProgram(AsyncCLIDaemon):
     async def start(self):
-        try:
-            import colorlog
-        except ImportError:
-            logging.basicConfig()
-        else:
-            colorlog.basicConfig()
-
         self.registerer = None
 
         p = self.build_parser()
 
         opts = p.parse_args()
         server_opts = extract_server_arguments(opts)
+        set_up_logging(opts, [logging.getLogger("fileserver")])
 
         await self.start_with_options(**vars(opts), server_opts=server_opts)
 
@@ -361,14 +357,7 @@ class FileServerProgram(AsyncCLIDaemon):
         p.add_argument(
             "--version", action="version", version="%(prog)s " + aiocoap.meta.version
         )
-        p.add_argument(
-            "-v",
-            "--verbose",
-            help="Be more verbose (repeat to debug)",
-            action="count",
-            dest="verbosity",
-            default=0,
-        )
+        add_verbosity_arguments(p)
         p.add_argument(
             "--register",
             help="Register with a Resource directory",
@@ -400,23 +389,12 @@ class FileServerProgram(AsyncCLIDaemon):
     async def start_with_options(
         self,
         path,
-        verbosity=0,
         register=False,
         server_opts=None,
         write=False,
         etag_length=8,
     ):
         log = logging.getLogger("fileserver")
-        coaplog = logging.getLogger("coap-server")
-
-        if verbosity == 1:
-            log.setLevel(logging.INFO)
-        elif verbosity == 2:
-            log.setLevel(logging.DEBUG)
-            coaplog.setLevel(logging.INFO)
-        elif verbosity >= 3:
-            log.setLevel(logging.DEBUG)
-            coaplog.setLevel(logging.DEBUG)
 
         server = FileServer(path, log, write=write, etag_length=etag_length)
         if server_opts is None:
@@ -434,11 +412,6 @@ class FileServerProgram(AsyncCLIDaemon):
                 log.warn("Resource directory does not look like a host-only CoAP URI")
 
             self.registerer = Registerer(self.context, rd=register, lt=60)
-
-            if verbosity == 2:
-                self.registerer.log.setLevel(logging.INFO)
-            elif verbosity >= 3:
-                self.registerer.log.setLevel(logging.DEBUG)
 
     async def shutdown(self):
         if self.registerer is not None:

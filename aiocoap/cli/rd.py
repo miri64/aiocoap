@@ -42,7 +42,12 @@ from aiocoap.proxy.server import Proxy
 from aiocoap.util.cli import AsyncCLIDaemon
 import aiocoap.util.uri
 from aiocoap import error
-from aiocoap.cli.common import add_server_arguments, server_context_from_arguments
+from aiocoap.cli.common import (
+    add_server_arguments,
+    server_context_from_arguments,
+    add_verbosity_arguments,
+    set_up_logging,
+)
 from aiocoap.numbers import codes, ContentFormat
 import aiocoap.proxy.server
 
@@ -419,7 +424,7 @@ def link_format_from_message(message):
         if certain_format == ContentFormat.LINKFORMAT:
             return parse(message.payload.decode("utf8"))
         else:
-            raise error.UnsupportedMediaType()
+            raise error.UnsupportedContentFormat()
     except (UnicodeDecodeError, link_header.ParseException):
         raise error.BadRequest()
 
@@ -829,6 +834,7 @@ def build_parser():
     p = argparse.ArgumentParser(description=__doc__)
 
     add_server_arguments(p)
+    add_verbosity_arguments(p)
 
     p.add_argument(
         "--version", action="version", version="%(prog)s " + aiocoap.meta.version
@@ -850,12 +856,6 @@ def build_parser():
         action="store_false",
         dest="lwm2m_compat",
     )
-    p.add_argument(
-        "--verbose",
-        help="Increase debug log output (repeat for increased verbosity)",
-        action="count",
-        default=0,
-    )
 
     return p
 
@@ -865,14 +865,11 @@ class Main(AsyncCLIDaemon):
         parser = build_parser()
         options = parser.parse_args(args if args is not None else sys.argv[1:])
 
+        self.log = logging.getLogger("resource-directory")
+        set_up_logging(options, [self.log])
+
         # Putting in an empty site to construct the site with a context
         self.context = await server_context_from_arguments(None, options)
-
-        self.log = logging.getLogger("resource-directory")
-        if options.verbose >= 2:
-            self.log.setLevel(logging.DEBUG)
-        elif options.verbose == 1:
-            self.log.setLevel(logging.INFO)
 
         self.site = StandaloneResourceDirectory(
             context=self.context,

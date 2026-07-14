@@ -30,6 +30,7 @@ import aiocoap.proxy.client
 from aiocoap.util import contenttype
 from aiocoap.util.cli import ActionNoYes
 from aiocoap.numbers import ContentFormat
+from aiocoap.cli.common import add_verbosity_arguments, set_up_logging
 
 log = logging.getLogger("coap.aiocoap-client")
 
@@ -41,20 +42,9 @@ def augment_parser_for_global(p, *, prescreen=False):
         type=Path,
     )
     p.add_argument(
-        "-v",
-        "--verbose",
-        help="Increase the debug output",
-        action="count",
-    )
-    p.add_argument(
-        "-q",
-        "--quiet",
-        help="Decrease the debug output",
-        action="count",
-    )
-    p.add_argument(
         "--version", action="version", version="%(prog)s " + aiocoap.meta.version
     )
+    add_verbosity_arguments(p)
 
     p.add_argument(
         "--interactive",
@@ -162,36 +152,6 @@ def build_parser(*, use_global=True, use_interactive=True, prescreen=False):
         augment_parser_for_interactive(p, prescreen=prescreen)
 
     return p
-
-
-def configure_logging(verbosity, color):
-    if color is not False:
-        try:
-            import colorlog
-        except ImportError:
-            color = False
-        else:
-            colorlog.basicConfig()
-    if not color:
-        logging.basicConfig()
-
-    if verbosity <= -2:
-        logging.getLogger("coap").setLevel(logging.CRITICAL + 1)
-    elif verbosity == -1:
-        logging.getLogger("coap").setLevel(logging.ERROR)
-    elif verbosity == 0:
-        logging.getLogger("coap").setLevel(logging.WARNING)
-    elif verbosity == 1:
-        logging.getLogger("coap").setLevel(logging.WARNING)
-        logging.getLogger("coap.aiocoap-client").setLevel(logging.INFO)
-    elif verbosity == 2:
-        logging.getLogger("coap").setLevel(logging.INFO)
-    elif verbosity >= 3:
-        logging.getLogger("coap").setLevel(logging.DEBUG)
-    elif verbosity >= 4:
-        logging.getLogger("coap").setLevel(0)
-
-    log.debug("Logging configured.")
 
 
 def colored(text, options, tokenlambda):
@@ -660,9 +620,7 @@ async def main(args=None):
     first_parser = build_parser(prescreen=True)
     first_args = first_parser.parse_args(args)
 
-    configure_logging(
-        (first_args.verbose or 0) - (first_args.quiet or 0), first_args.color
-    )
+    set_up_logging(first_args, [log], first_args.color)
 
     if first_args.config is not None:
         try:
