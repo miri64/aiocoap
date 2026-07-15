@@ -144,6 +144,13 @@ class WithLogMonitoring(IsolatedAsyncioTestCase):
         self.handler = self.ListHandler()
 
         logging.root.setLevel(0)
+        # Those two clog all the output whenever running pyodide tests (and are
+        # not part of regular debug output)
+        logging.getLogger("selenium.webdriver.remote.remote_connection").setLevel(
+            logging.INFO
+        )
+        logging.getLogger("urllib3.connectionpool").setLevel(logging.INFO)
+
         logging.root.addHandler(self.handler)
         logging.captureWarnings(True)
         warnings.simplefilter("always")
