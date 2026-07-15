@@ -119,7 +119,9 @@ parallel = true
 source_pkgs = ["aiocoap"]
 
 [tool.coverage.paths]
-aiocoap = ["aiocoap/", ".tox/*/lib/*/site-packages/aiocoap/"]
+# /lib/…/site-packages come from pyodide, where a wheel gets installed in the
+# emscripten file system
+aiocoap = ["aiocoap/", ".tox/*/lib/*/site-packages/aiocoap/", "/lib/*/site-packages/aiocoap/"]
 
 [tool.codespell]
 ignore-words-list = [

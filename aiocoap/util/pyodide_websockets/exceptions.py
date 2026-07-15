@@ -9,3 +9,8 @@ class WebSocketException(Exception):
 
 class ConnectionClosed(WebSocketException):
     pass
+
+
+class InvalidStatus(WebSocketException):
+    # We never raise this, ws.py needs the type to catch an exception.
+    pass

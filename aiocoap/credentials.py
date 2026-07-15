@@ -231,7 +231,7 @@ def import_edhoc_credential_pair():
     return edhoc.EdhocCredentials
 
 
-_re_cache = {}
+_re_cache: dict[str, re.Pattern] = {}
 
 
 class CredentialsMap(dict):

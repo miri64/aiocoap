@@ -163,6 +163,17 @@ steps:
       - tox --notest --skip-env '^py31[^4]'
       - tox --skip-env '^py31[^4]'
 
+  test:pyodide-firefox:
+    image: docker.io/python:3
+    depends_on: [env, test:3.13-minimal]
+    commands:
+      - . ./envvars
+      - apt-get update
+      - apt-get -y install firefox-esr
+      # As this needs some prep also when run standalone, it is split into
+      # something easily callalble by anyone.
+      - ./.woodpecker/run-pyodide-test.sh
+
   mypy:
     image: docker.io/python:3.12
     depends_on: [env]
