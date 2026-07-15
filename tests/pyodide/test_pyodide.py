@@ -35,7 +35,9 @@ except ImportError:
 import sys
 from pathlib import Path
 
-sys.path.append(Path(__file__).parent.parent.parent)
+# A Path in there would work on most happy paths, but can fail badly in
+# unexpected situations <https://github.com/python/cpython/issues/145898>
+sys.path.append(str(Path(__file__).parent.parent.parent))
 from tests.test_server import WithTestServer
 
 # so let's see what does work easily:
