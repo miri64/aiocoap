@@ -10,7 +10,7 @@ If you are reading this through the Python documentation, be aware that there
 is additional documentation available online_ and in the source code's ``doc``
 directory.
 
-.. _`Constrained Application Protocol`: http://coap.technology/
+.. _`Constrained Application Protocol`: http://coap.space/
 .. _online: http://aiocoap.readthedocs.io/
 
 Module contents
