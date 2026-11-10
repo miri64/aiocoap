@@ -65,6 +65,7 @@ tinydtls = [ "DTLSSocket >= 0.1.18" ]
 ws = [ 'websockets >= 13, < 16; platform_system != "Emscripten"' ]
 prettyprint = [ "cbor2 < 5.8", "pygments >= 2.1", "cbor-diag", "colorlog" ]
 slipmux = [ "pyserial-asyncio (>= 0.6, < 0.7)" ]
+ocoap = ["cbor2 < 5.8", "cbor-diag", "pyhpke"]
 docs = [
     "sphinx >= 5",
     "sphinx-argparse",
@@ -84,6 +85,7 @@ all = [
     'pyserial-asyncio (>= 0.6, < 0.7); platform_system != "Emscripten"',
     'websockets >= 13, < 16; platform_system != "Emscripten"',
     "cbor2 < 5.8", "pygments", "cbor-diag", "colorlog",
+    "pyhpke",
 ]
 
 [tool.setuptools.dynamic]

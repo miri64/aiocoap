@@ -60,6 +60,10 @@ def _load_tests():
                 and aiocoap.defaults.slipmux_missing_modules()
             ):
                 continue
+            if (
+                "ocoap" in p or "hpke" in p
+            ) and aiocoap.defaults.ocoap_missing_modules():
+                continue
             for t in doctest.DocTestSuite(p):
                 i += 1
 

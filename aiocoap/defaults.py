@@ -283,6 +283,22 @@ def slipmux_missing_modules():
     return missing
 
 
+def ocoap_missing_modules():
+    missing = []
+
+    try:
+        import cbor2
+    except ImportError:
+        missing.append("cbor2")
+    try:
+        import pyhpke
+        import pyhpke.kem
+    except ImportError:
+        missing.append("pyhpke")
+
+    return missing
+
+
 def log_secret(secret):
     """Wrapper around secret values that go into log output.
 
@@ -308,6 +324,7 @@ missing_module_functions = {
     "prettyprint": prettyprint_missing_modules,
     "ws": ws_missing_modules,
     "slipmux": slipmux_missing_modules,
+    "ocoap": ocoap_missing_modules,
 }
 
 __all__ = [
@@ -320,5 +337,6 @@ __all__ = [
     "linkheader_missing_modules",
     "prettyprint_missing_modules",
     "slipmux_missing_modules",
+    "ocoap_missing_modules",
     "missing_module_functions",
 ]
