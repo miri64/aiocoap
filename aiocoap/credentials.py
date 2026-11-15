@@ -219,6 +219,14 @@ class TLSCert(_Objectish):
         return {"cafile": self.certfile}
 
 
+class HPKEKeyConfig(_Objectish):
+    def __init__(self, key_config: str):
+        from . import hpke
+        with open(key_config, "rb") as fp:
+            self.key_config = hpke.HPKEKeyConfigDB.load_key_config(fp)
+        self.ocoap = None
+
+
 def import_filesystem_security_context():
     from .oscore import FilesystemSecurityContext
 
@@ -297,6 +305,7 @@ class CredentialsMap(dict):
         "any-of": lambda: AnyOf,
         "all-of": lambda: AllOf,
         "edhoc-oscore": import_edhoc_credential_pair,
+        "ocoap": lambda: HPKEKeyConfig,
     }
 
     @staticmethod

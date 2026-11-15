@@ -100,6 +100,14 @@ def add_server_arguments(parser):
         type=Path,
     )
 
+    parser.add_argument(
+        "--hpke-key-config",
+        help=(
+            "CBOR diagonstic notation file pointing to the HPKE key configuration "
+            "and containing the private keys of the server."
+        )
+    )
+
     # These are to be eventually migrated into credentials
     parser.add_argument(
         "--tls-server-certificate",
@@ -126,12 +134,14 @@ def extract_server_arguments(namespace):
     server_arguments.tls_server_certificate = namespace.tls_server_certificate
     server_arguments.tls_server_key = namespace.tls_server_key
     server_arguments.credentials = namespace.credentials
+    server_arguments.hpke_key_config = namespace.hpke_key_config
 
     del namespace.server_config
     del namespace.bind
     del namespace.tls_server_certificate
     del namespace.tls_server_key
     del namespace.credentials
+    del namespace.hpke_key_config
     del namespace.help_bind
 
     return server_arguments
@@ -194,6 +204,14 @@ async def server_context_from_arguments(site, namespace, **kwargs):
         site = OscoreSiteWrapper(site, server_credentials)
     else:
         server_credentials = None
+
+    if namespace.hpke_key_config:
+        from aiocoap.hpke import HPKEKeyConfigDB
+        hpke_configs = HPKEKeyConfigDB.load(namespace.hpke_key_config)
+
+        from aiocoap.ocoap_sitewrapper import OCoAPSiteWrapper
+
+        site = OCoAPSiteWrapper(site, hpke_configs)
 
     return await Context.create_server_context(
         site,

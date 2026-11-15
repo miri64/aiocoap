@@ -165,7 +165,7 @@ class EndpointAddress(metaclass=abc.ABCMeta):
         if maximum_block_size_exp is 7. This will be removed in favor of a maximum
         message size when the block handlers can get serialization length
         predictions from the remote."""
-        return 1124
+        return 1200
 
     def as_response_address(self):
         """Address to be assigned to a response to messages that arrived with

@@ -30,6 +30,7 @@ def _extract_block_key(message):
                 OptionNumber.BLOCK1,
                 OptionNumber.BLOCK2,
                 OptionNumber.OBSERVE,
+                OptionNumber.OCOAP,
             ]
         ),
     )

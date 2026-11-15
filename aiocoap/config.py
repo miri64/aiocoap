@@ -188,6 +188,11 @@ class OscoreParameters(LoadStoreClass):
 
 
 @dataclass
+class OCoAPParameters(LoadStoreClass):
+    """Parameters for setting up an :mod:`oscore <aiocoap.transports.ocoap>` transport."""
+
+
+@dataclass
 class SlipmuxDevice(LoadStoreClass):
     """Parameters for a single slipmux device.
 
@@ -332,6 +337,7 @@ class TransportParameters(LoadStoreClass):
     tlsserver: TlsServerParameters | None = None
     ws: WsParameters | None = None
     oscore: OscoreParameters | None = None
+    ocoap: OCoAPParameters | None = None
     slipmux: SlipmuxParameters | None = None
 
     _legacy_bind = None

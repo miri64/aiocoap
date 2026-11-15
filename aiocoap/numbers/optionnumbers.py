@@ -56,6 +56,7 @@ class OptionNumber(ExtensibleIntEnum):
     ECHO = 252
     NO_RESPONSE = 258
     REQUEST_TAG = 292
+    OCOAP = 65001
 
     # experimental for draft-amsuess-core-cachable-oscore
     #
@@ -216,3 +217,7 @@ OptionNumber.REQUEST_HASH.set_format(optiontypes.OpaqueOption)
 
 # FIXME: Should we express this as an enum right away?
 OptionNumber.URI_PATH_ABBREV.set_format(optiontypes.UintOption)
+
+# draft-lenders-core-oblivious-coap
+
+OptionNumber.OCOAP.set_format(optiontypes.OpaqueOption)

@@ -51,6 +51,9 @@ def get_default_clienttransports(*, loop=None, use_env=True):
     if not oscore_missing_modules():
         yield "oscore"
 
+    if not ocoap_missing_modules():
+        yield "ocoap"
+
     if not is_pyodide:
         # There, those would just raise NotImplementedError all over the place
 
@@ -103,6 +106,9 @@ def get_default_servertransports(*, loop=None, use_env=True):
 
     if not oscore_missing_modules():
         yield "oscore"
+
+    if not ocoap_missing_modules():
+        yield "ocoap"
 
     if not is_pyodide:
         # There, those would just raise NotImplementedError all over the place
@@ -290,6 +296,10 @@ def ocoap_missing_modules():
         import cbor2
     except ImportError:
         missing.append("cbor2")
+    try:
+        import cbor_diag
+    except ImportError:
+        missing.append("cbor-diag")
     try:
         import pyhpke
         import pyhpke.kem

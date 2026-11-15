@@ -204,6 +204,11 @@ class Context(interfaces.RequestProvider):
         )
 
         # FIXME make defaults overridable (postponed until they become configurable too)
+        if selected_transports.ocoap:
+            from .transports.ocoap import TransportOCoAP
+
+            ocoaptransport = TransportOCoAP(self, self)
+            self.request_interfaces.append(ocoaptransport)
         if selected_transports.oscore:
             from .transports.oscore import TransportOSCORE
 

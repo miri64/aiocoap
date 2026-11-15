@@ -877,7 +877,10 @@ class Main(AsyncCLIDaemon):
             lwm2m_compat=options.lwm2m_compat,
             log=self.log,
         )
-        self.context.serversite = self.site
+        if hasattr(self.context.serversite, "_inner_site"):
+            self.context.serversite._inner_site = self.site
+        else:
+            self.context.serversite = self.site
 
     async def shutdown(self):
         await self.site.shutdown()

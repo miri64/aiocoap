@@ -258,3 +258,4 @@ class Options:
     )
     edhoc = _empty_presence_view(OptionNumber.EDHOC)
     size2 = _single_value_view(OptionNumber.SIZE2)
+    ocoap = _single_value_view(OptionNumber.OCOAP)
